@@ -15,12 +15,19 @@ App Store / Google Play に登録する **サポートURL・プライバシー�
 ├── app-ads.txt                    AdMob の販売者認証。**ドメイン直下でないと読まれない**
 ├── index.html                     アプリ一覧。デベロッパWebサイトの入口
 ├── assets/style.css               全ページ共通のスタイル
-└── tanadoko/
-    ├── index.html                 サポートの入口（App Store のサポートURL）
-    ├── privacy.html               プライバシーポリシー
-    ├── csv-guide.html             取り込むCSVの作り方
-    └── tanadoko_template.csv      テンプレート（UTF-8 BOM付き。Excelでそのまま開ける）
+├── tanadoko/
+│   ├── index.html                 サポートの入口（App Store のサポートURL）
+│   ├── privacy.html               プライバシーポリシー
+│   ├── csv-guide.html             取り込むCSVの作り方
+│   └── tanadoko_template.csv      テンプレート（UTF-8 BOM付き。Excelでそのまま開ける）
+└── doublecheckun/
+    ├── index.html                 サポートの入口
+    └── privacy.html               プライバシーポリシー
 ```
+
+アプリを増やすときは `<アプリ名>/index.html` と `<アプリ名>/privacy.html` を足し、
+ルートの `index.html` にカードを1つ追加する。`app-ads.txt` はアカウント単位なので
+アプリが増えても変更不要。
 
 ## 触るときの注意
 
