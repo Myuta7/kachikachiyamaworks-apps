@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>取り込むCSVの作り方 | たなどこ？</title>
+<meta name="description" content="アプリ「たなどこ？」に取り込むCSVの作り方。決まった書式はなく、商品名の列が1つあれば取り込めます。テンプレートCSVも配布しています。">
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  /* このページ専用（表計算ソフトの見立て・列の割り当て図など） */
+  .step { display: flex; flex-direction: column; gap: 1.25rem; }
+  .step-head {
+    display: flex; align-items: baseline; gap: .75rem;
+    padding-bottom: .75rem; border-bottom: 1px solid var(--line);
+  }
+  .step-num {
+    font-family: var(--mono); font-size: .8125rem; font-weight: 700;
+    color: var(--mint); letter-spacing: .06em; flex: none;
+  }
+
+  .sheet-scroll { overflow-x: auto; border-radius: 10px; }
+  .sheet {
+    min-width: 27rem; border: 1px solid var(--line-strong); border-radius: 10px;
+    overflow: hidden; background: var(--surface); box-shadow: var(--shadow);
+    font-family: var(--mono); font-size: .8125rem; font-variant-numeric: tabular-nums;
+  }
+  .row { display: grid; grid-template-columns: 2.25rem 1fr 6.5rem 10rem; }
+  .row + .row { border-top: 1px solid var(--line); }
+  .cell {
+    padding: .5rem .625rem; border-left: 1px solid var(--line);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .gutter {
+    border-left: 0; background: var(--surface-sunk); color: var(--ink-faint);
+    text-align: center; font-size: .6875rem;
+  }
+  .row-cols .cell { background: var(--surface-sunk); color: var(--ink-faint); text-align: center; font-size: .6875rem; }
+  .row-head .cell { font-weight: 700; background: color-mix(in srgb, var(--surface-sunk) 55%, var(--surface)); }
+  .mark-same { background: var(--mint-soft); box-shadow: inset 2px 0 0 var(--mint-line); }
+  .mark-blank { background: var(--amber-soft); box-shadow: inset 0 0 0 1px var(--amber-line); color: var(--ink-faint); }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: .875rem; }
+  figcaption { font-size: .8125rem; color: var(--ink-muted); }
+
+  .legend { display: flex; flex-direction: column; gap: .5rem; list-style: none; padding: 0; margin: 0; }
+  .legend li { display: grid; grid-template-columns: .75rem 1fr; gap: .625rem; align-items: start; font-size: .875rem; color: var(--ink-muted); }
+  .swatch { width: .75rem; height: .75rem; border-radius: 3px; margin-top: .45rem; }
+  .swatch-same { background: var(--mint-soft); border: 1px solid var(--mint-line); }
+  .swatch-blank { background: var(--amber-soft); border: 1px solid var(--amber-line); }
+
+  .combos { display: grid; gap: .75rem; }
+  @media (min-width: 34rem) { .combos { grid-template-columns: 1fr 1fr; } }
+  .combo-cols { font-family: var(--mono); font-size: .8125rem; color: var(--ink); display: flex; flex-wrap: wrap; gap: .375rem; align-items: center; }
+  .tag { border: 1px solid var(--line-strong); border-radius: 5px; padding: .0625rem .4375rem; background: var(--surface-sunk); }
+  .tag-key { border-color: var(--mint-line); background: var(--mint-soft); color: var(--mint); font-weight: 700; }
+  .combo-note { font-size: .8125rem; color: var(--ink-muted); }
+  .badge {
+    align-self: flex-start; font-size: .6875rem; font-weight: 700; letter-spacing: .08em;
+    padding: .125rem .5rem; border-radius: 999px;
+    background: var(--mint-soft); color: var(--mint); border: 1px solid var(--mint-line);
+  }
+
+  .map { display: flex; flex-direction: column; gap: .5rem; }
+  .map-row { display: grid; grid-template-columns: 1fr 1.5rem 1fr; align-items: center; gap: .5rem; font-family: var(--mono); font-size: .8125rem; }
+  .map-from, .map-to {
+    border: 1px solid var(--line-strong); border-radius: 6px; padding: .375rem .625rem;
+    background: var(--surface); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .map-to { border-color: var(--mint-line); background: var(--mint-soft); color: var(--mint); font-weight: 700; }
+  .map-to-off { border-color: var(--line); background: var(--surface-sunk); color: var(--ink-faint); font-weight: 400; }
+  .map-arrow { text-align: center; color: var(--ink-faint); }
+
+  .join { gap: .75rem; }
+  .join-inputs { display: grid; gap: .75rem; align-items: end; }
+  @media (min-width: 36rem) { .join-inputs { grid-template-columns: 1fr auto 1fr; } }
+  .join-plus { text-align: center; color: var(--ink-faint); font-size: 1.125rem; padding-bottom: .875rem; }
+  .join-arrow { text-align: center; font-size: .8125rem; color: var(--ink-muted); padding: .125rem 0; }
+
+  .mini { display: flex; flex-direction: column; gap: .375rem; min-width: 0; }
+  .mini-cap { font-size: .75rem; font-weight: 700; color: var(--ink-muted); }
+  .mini-sheet {
+    border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden;
+    background: var(--surface); font-family: var(--mono); font-size: .75rem; font-variant-numeric: tabular-nums;
+  }
+  .jrow { display: grid; grid-template-columns: 1fr 4.5rem; }
+  /* バーコードは13桁が切れずに入る幅を確保する */
+  .jrow-code { grid-template-columns: 1fr 7.5rem; }
+  .jrow3 { display: grid; grid-template-columns: 1fr 4.5rem 8rem; }
+  .jrow + .jrow, .jrow3 + .jrow3 { border-top: 1px solid var(--line); }
+  .jrow span, .jrow3 span { padding: .4375rem .5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .jrow span + span, .jrow3 span + span { border-left: 1px solid var(--line); }
+  .jrow-head span { font-weight: 700; background: var(--surface-sunk); color: var(--ink-muted); }
+  @media (max-width: 24rem) {
+    .mini-sheet { font-size: .6875rem; }
+    .jrow { grid-template-columns: 1fr 3.5rem; }
+    .jrow-code { grid-template-columns: 1fr 6.5rem; }
+    .jrow3 { grid-template-columns: 1fr 3.5rem 6.5rem; }
+  }
+  .pair-a { background: var(--pair-a); box-shadow: inset 2px 0 0 var(--pair-a-line); }
+  .pair-b { background: var(--pair-b); box-shadow: inset 2px 0 0 var(--pair-b-line); }
+
+  .match { display: grid; gap: .75rem; }
+  @media (min-width: 36rem) { .match { grid-template-columns: 1fr 1fr; } }
+  .match-box {
+    border: 1px solid var(--line); border-radius: 8px; padding: .75rem .875rem;
+    background: var(--surface); display: flex; flex-direction: column; gap: .375rem;
+  }
+  .match-title { font-size: .8125rem; font-weight: 700; }
+  .match-ok { color: var(--mint); }
+  .match-ng { color: var(--amber); }
+  .match-box ul { margin: 0; padding-left: 1.125rem; display: flex; flex-direction: column; gap: .25rem; }
+  .match-box li { font-size: .8125rem; color: var(--ink-muted); }
+  .match-box .ex { font-family: var(--mono); color: var(--ink); }
+
+  .download {
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 1.75rem);
+    display: flex; flex-direction: column; gap: 1rem; box-shadow: var(--shadow);
+  }
+
+  .prose { display: flex; flex-direction: column; gap: 1rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <p class="crumbs"><a href="/">アプリサポート</a> ／ <a href="/tanadoko/">たなどこ？</a> ／ CSVの作り方</p>
+
+  <header>
+    <p class="eyebrow">たなどこ？ / TANADOKO</p>
+    <h1>取り込むCSVの作り方</h1>
+    <p class="lede">
+      在庫システムから出したCSVでも、Excelで手作りした表でも取り込めます。
+      決まった書式はありません。必要なのは<strong>商品名の列が1つあること</strong>だけです。
+    </p>
+  </header>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">STEP 1</span>
+      <h2>こんな表を用意します</h2>
+    </div>
+
+    <figure>
+      <div class="sheet-scroll">
+        <div class="sheet">
+          <div class="row row-cols" aria-hidden="true">
+            <div class="cell gutter"></div>
+            <div class="cell">A</div>
+            <div class="cell">B</div>
+            <div class="cell">C</div>
+          </div>
+          <div class="row row-head">
+            <div class="cell gutter" aria-hidden="true">1</div>
+            <div class="cell">商品名</div>
+            <div class="cell">棚番号</div>
+            <div class="cell">バーコード</div>
+          </div>
+          <div class="row">
+            <div class="cell gutter" aria-hidden="true">2</div>
+            <div class="cell mark-same">サンプル錠10mg</div>
+            <div class="cell mark-same">A-1</div>
+            <div class="cell">4901234567890</div>
+          </div>
+          <div class="row">
+            <div class="cell gutter" aria-hidden="true">3</div>
+            <div class="cell mark-same">サンプル錠10mg</div>
+            <div class="cell mark-same">B-2</div>
+            <div class="cell">4901234567906</div>
+          </div>
+          <div class="row">
+            <div class="cell gutter" aria-hidden="true">4</div>
+            <div class="cell">サンプル軟膏5g</div>
+            <div class="cell">C-3</div>
+            <div class="cell mark-blank">（空欄）</div>
+          </div>
+          <div class="row">
+            <div class="cell gutter" aria-hidden="true">5</div>
+            <div class="cell">ガーゼ 5号</div>
+            <div class="cell">D-4</div>
+            <div class="cell mark-blank">（空欄）</div>
+          </div>
+        </div>
+      </div>
+
+      <ul class="legend">
+        <li>
+          <span class="swatch swatch-same"></span>
+          <span><strong>同じ商品名は何行あってもかまいません。</strong>
+            取り込むと1つの商品にまとまり、棚番号は「A-1 / B-2」のように並べて表示されます。
+            棚が複数ある商品や、包装違いでバーコードが複数ある商品はこの形で書きます。</span>
+        </li>
+        <li>
+          <span class="swatch swatch-blank"></span>
+          <span><strong>空欄のままでかまいません。</strong>
+            バーコードが分からない商品は空にしておけば、名前で検索できます。</span>
+        </li>
+      </ul>
+      <figcaption>
+        列の名前や並び順は自由です。「品名」「JANCD」「棚」など在庫システムが付けた見出しのままで大丈夫です。
+        どの列が何なのかは、取り込むときにアプリの画面で指定します（STEP 4）。
+      </figcaption>
+    </figure>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">STEP 2</span>
+      <h2>列の組み合わせは3通り</h2>
+    </div>
+
+    <div class="combos">
+      <div class="card">
+        <span class="badge">おすすめ</span>
+        <div class="combo-cols">
+          <span class="tag tag-key">商品名</span><span class="tag">棚番号</span><span class="tag">バーコード</span>
+        </div>
+        <p class="combo-note">名前でもバーコードでも棚番号を引けます。棚入れ作業まで含めて使うならこの形。</p>
+      </div>
+      <div class="card">
+        <div class="combo-cols">
+          <span class="tag tag-key">商品名</span><span class="tag">棚番号</span>
+        </div>
+        <p class="combo-note">名前で探すだけならこれで十分です。バーコードを出力できない在庫システムでも問題ありません。</p>
+      </div>
+      <div class="card">
+        <div class="combo-cols">
+          <span class="tag tag-key">商品名</span><span class="tag">バーコード</span>
+        </div>
+        <p class="combo-note">棚番号は後から足せます。バーコードの一覧が先に手に入ったときに。</p>
+      </div>
+      <div class="card">
+        <div class="combo-cols"><span class="tag tag-key">商品名</span></div>
+        <p class="combo-note">商品名の列は必ず1つ必要です。これが無いと取り込めません。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">STEP 3</span>
+      <h2>CSVとして保存します</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        Excelなら<strong>「名前を付けて保存」→ ファイルの種類に「CSV UTF-8（コンマ区切り）」</strong>を選びます。
+        在庫システムが出した Shift-JIS のCSVでも、そのまま取り込めます。
+        <strong>文字コードはアプリが自動で判定します。</strong>
+      </p>
+      <div class="note">
+        Excelは保存のたびに「一部の機能が失われる可能性があります」と聞いてきますが、そのまま進めて大丈夫です。
+        CSVは1枚のシートしか保存できないためで、中身が壊れているわけではありません。
+      </div>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">STEP 4</span>
+      <h2>アプリで取り込み、列の役割を選びます</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        「データ」タブの<strong>「CSVを取り込む」</strong>から選ぶと、列を割り当てる画面が出ます。
+        各列の代表的な中身が表示されるので、それを見ながら役割を選んでください。
+      </p>
+    </div>
+
+    <figure>
+      <div class="map">
+        <div class="map-row">
+          <span class="map-from">品名</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to">商品名</span>
+        </div>
+        <div class="map-row">
+          <span class="map-from">棚</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to">棚番</span>
+        </div>
+        <div class="map-row">
+          <span class="map-from">JANCD</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to">バーコード</span>
+        </div>
+        <div class="map-row">
+          <span class="map-from">包装形態</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to map-to-off">使わない</span>
+        </div>
+      </div>
+      <figcaption>
+        商品名に選べるのは1列だけ。棚番とバーコードは何列でも選べます
+        （「棚番1」「棚番2」…と横に並んでいる表もそのまま取り込めます）。
+        使わない列は「使わない」のままで無視されます。
+      </figcaption>
+    </figure>
+
+    <div class="prose">
+      <p>
+        取り込み方は先に2つから選びます。<strong>「新規リスト作成」</strong>は今のデータを消して作り直し、
+        <strong>「既存のリストに追加」</strong>は今のデータに足します。
+        追加のときは、すでにある棚番号やバーコードと重複する分は自動で無視されます。
+      </p>
+    </div>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">CASE</span>
+      <h2>棚番号とバーコードのCSVが別々にしか出せないとき</h2>
+    </div>
+
+    <div class="prose">
+      <p>
+        在庫システムによっては「商品名＋棚番号」と「商品名＋バーコード」を
+        別々のCSVでしか出力できないことがあります。その場合は1つにまとめる必要はありません。
+        <strong>2回に分けて取り込めば、アプリの中で商品名をたよりに合流します。</strong>
+      </p>
+      <p>
+        ① 棚番号のCSVを<strong>「新規リスト作成」</strong>で取り込む →
+        ② バーコードのCSVを<strong>「既存のリストに追加」</strong>で取り込む。
+        この順番です（逆でも同じ結果になります）。
+      </p>
+    </div>
+
+    <figure class="join">
+      <div class="join-inputs">
+        <div class="mini">
+          <p class="mini-cap">① 棚番号のCSV</p>
+          <div class="mini-sheet">
+            <div class="jrow jrow-head"><span>商品名</span><span>棚</span></div>
+            <div class="jrow"><span class="pair-a">サンプル錠10mg</span><span>A-1</span></div>
+            <div class="jrow"><span class="pair-b">サンプル軟膏5g</span><span>C-3</span></div>
+          </div>
+        </div>
+
+        <div class="join-plus" aria-hidden="true">＋</div>
+
+        <div class="mini">
+          <p class="mini-cap">② バーコードのCSV</p>
+          <div class="mini-sheet">
+            <div class="jrow jrow-code jrow-head"><span>品名</span><span>JANCD</span></div>
+            <div class="jrow jrow-code"><span class="pair-a">サンプル錠10mg</span><span>4901234567890</span></div>
+            <div class="jrow jrow-code"><span class="pair-b">サンプル軟膏5g</span><span>4901234567913</span></div>
+          </div>
+        </div>
+      </div>
+
+      <p class="join-arrow" aria-hidden="true">↓　商品名が同じ行どうしが1つにまとまる</p>
+
+      <div class="mini-sheet">
+        <div class="jrow3 jrow-head"><span>商品名</span><span>棚番号</span><span>バーコード</span></div>
+        <div class="jrow3"><span class="pair-a">サンプル錠10mg</span><span>A-1</span><span>4901234567890</span></div>
+        <div class="jrow3"><span class="pair-b">サンプル軟膏5g</span><span>C-3</span><span>4901234567913</span></div>
+      </div>
+
+      <figcaption>
+        列の見出しは2つのCSVで違っていてかまいません（「商品名」と「品名」でもよい）。
+        突き合わせに使うのは見出しではなく、<strong>商品名の欄に入っている文字そのもの</strong>です。
+      </figcaption>
+    </figure>
+
+    <h3>どこまで同じなら「同じ商品」とみなされるか</h3>
+
+    <div class="match">
+      <div class="match-box">
+        <p class="match-title match-ok">同じ商品として合流します</p>
+        <ul>
+          <li>全角と半角の違い<br><span class="ex">サンプル錠１０mg ＝ サンプル錠10mg</span></li>
+          <li>半角カナと全角カナの違い<br><span class="ex">ｻﾝﾌﾟﾙ錠 ＝ サンプル錠</span></li>
+          <li>カタカナとひらがなの違い<br><span class="ex">サンプル ＝ さんぷる</span></li>
+          <li>アルファベットの大文字と小文字<br><span class="ex">MG ＝ mg</span></li>
+        </ul>
+      </div>
+
+      <div class="match-box">
+        <p class="match-title match-ng">別の商品として扱われます</p>
+        <ul>
+          <li>スペースの有無や位置<br><span class="ex">サンプル 錠10mg ≠ サンプル錠10mg</span></li>
+          <li>メーカー名や括弧書きの違い<br><span class="ex">サンプル錠「A社」 ≠ サンプル錠「B社」</span></li>
+          <li>漢字とかなの書き分け<br><span class="ex">乾燥ガーゼ ≠ かんそうガーゼ</span></li>
+          <li>数字の桁や単位の書き方<br><span class="ex">10mg ≠ 10ミリグラム</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>合流しなかった行は、別の新しい商品として追加されます</strong>（棚番号が空のまま）。
+      取り込んだあと「データ」画面の<strong>棚番未登録</strong>の件数を見てください。
+      ここが大きいときは商品名の書き方がそろっていません。
+      Excelの置換で表記をそろえてから、もう一度「新規リスト作成」で入れ直すのが確実です。
+    </div>
+  </section>
+
+  <section class="download">
+    <h2>テンプレートをダウンロード</h2>
+    <p>
+      STEP 1 の表をそのままCSVにしたものです。見出し行を残して、中身を自分の在庫に書き換えてください。
+      Excelでそのまま開けるよう UTF-8（BOM付き）で保存されています。
+    </p>
+    <a class="btn" href="/tanadoko/tanadoko_template.csv" download>テンプレートCSVをダウンロード</a>
+    <pre>商品名,棚番号,バーコード
+サンプル錠10mg,A-1,4901234567890
+サンプル錠10mg,B-2,4901234567906
+サンプル軟膏5g,C-3,
+ガーゼ 5号,D-4,</pre>
+  </section>
+
+  <section class="step">
+    <div class="step-head">
+      <span class="step-num">FAQ</span>
+      <h2>つまずきやすいところ</h2>
+    </div>
+
+    <div class="faq">
+      <details>
+        <summary>バーコードの列が出力できません</summary>
+        <p>
+          商品名と棚番号だけで問題なく使えます。バーコードが1件も無いときは、
+          アプリのメニューからバーコードのタブ自体が消えて、名前での検索だけになります。
+          あとからバーコードの一覧が手に入ったら、「既存のリストに追加」で足せます。
+        </p>
+      </details>
+      <details>
+        <summary>1つの商品に棚が2か所以上あります</summary>
+        <p>
+          同じ商品名で行を分けて、棚番号だけ変えて書いてください。取り込むと1つの商品にまとまり、
+          検索したときに「A-1 / B-2」のように両方表示されます。
+          「棚番1」「棚番2」と列が横に並んでいる表なら、その両方を「棚番」に割り当てても同じ結果になります。
+        </p>
+      </details>
+      <details>
+        <summary>取り込んだら文字化けしました</summary>
+        <p>
+          文字コードは自動判定していますが、まれに外すことがあります。
+          Excelで開き直して「CSV UTF-8（コンマ区切り）」で保存し直すと直ります。
+          取り込み後の「データ」画面に、判定した文字コードが表示されるので確認できます。
+        </p>
+      </details>
+      <details>
+        <summary>バーコードの数字が「4.9E+12」のようになります</summary>
+        <p>
+          Excelが数字を数値として扱ってしまったときに起きます。バーコードの列を選んで
+          セルの書式を「文字列」にしてから貼り直してください。
+          先頭の 0 が消えてしまう場合も同じ原因です。
+        </p>
+      </details>
+      <details>
+        <summary>新しく採用した商品を数点だけ足したい</summary>
+        <p>
+          その数点だけを書いたCSVを作り、<strong>「既存のリストに追加」</strong>で取り込むのが早いです。
+          在庫システム側のマスタが更新されたら、あらためて全体を「新規リスト作成」で入れ直してください。
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    <p>たなどこ？ / TanaDoko — 在庫の棚番号を、商品名とバーコードから探すアプリ</p>
+    <p>
+      <a href="/tanadoko/">サポート</a>ー
+      <a href="/tanadoko/privacy.html">プライバシーポリシー</a>ー
+      <a href="https://www.kachikachiyamaworks.com/">株式会社カチカチヤマワークス</a>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>

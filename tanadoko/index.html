@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>たなどこ？ サポート | 株式会社カチカチヤマワークス</title>
+<meta name="description" content="在庫の棚番号を商品名とバーコードから探すアプリ「たなどこ？」のサポートページ。CSVの作り方、よくある質問、プライバシーポリシー。">
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<div class="wrap">
+
+  <p class="crumbs"><a href="/">アプリサポート</a> ／ たなどこ？</p>
+
+  <header>
+    <p class="eyebrow">たなどこ？ / TANADOKO</p>
+    <h1>たなどこ？ サポート</h1>
+    <p class="lede">
+      在庫の保管場所（棚番号）を、商品名とバーコードから探すアプリです。
+      お使いの在庫システムから出したCSVを取り込んで使います。
+    </p>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">START</span>
+      <h2>はじめに</h2>
+    </div>
+
+    <p>
+      このアプリは、<strong>CSVを取り込むまでは何も表示されません</strong>。
+      まずは「データ」タブから取り込んでください。
+      手元にCSVが無い場合は、同じ画面の<strong>「サンプルデータで試す」</strong>で
+      12件のサンプル在庫を入れて、ひととおりの動きを確認できます。
+    </p>
+
+    <p><a class="btn" href="/tanadoko/csv-guide.html">CSVの作り方を見る</a></p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">USE</span>
+      <h2>できること</h2>
+    </div>
+
+    <div class="card">
+      <h3>商品名で探す</h3>
+      <p>
+        ひらがな／カタカナ、全角／半角、大文字／小文字の違いを吸収して部分一致で絞り込みます。
+        スペースで区切って複数の語を入れると、すべてを含むものだけに絞れます。
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>バーコードで探す</h3>
+      <p>
+        カメラでGS1 DataBar Limited やJAN（EAN-13）を読み取り、その商品の棚番号を表示します。
+        1つの商品に包装違いのバーコードが複数あっても、どれを読み取っても同じ棚番号が出ます。
+        読み取る種類は「設定」タブで切り替えられます。
+      </p>
+      <p>
+        バーコードが1件も登録されていないときは、バーコードのタブ自体が表示されません。
+        商品名と棚番号だけでも問題なくお使いいただけます。
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>他の端末へデータを渡す</h3>
+      <p>
+        取り込んだデータは <code>.tanadoko</code> ファイルに書き出せます。
+        AirDropやファイル共有で渡すと、受け取った側は<strong>ファイルをタップするだけ</strong>で
+        取り込めます。
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">FAQ</span>
+      <h2>よくある質問</h2>
+    </div>
+
+    <div class="faq">
+      <details>
+        <summary>カメラの許可を間違えて拒否してしまいました</summary>
+        <p>
+          端末の「設定」＞「たなどこ？」＞「カメラ」から許可し直せます。
+          許可しない場合でも、商品名での検索はそのままご利用いただけます。
+        </p>
+      </details>
+      <details>
+        <summary>バーコードを読んでも何も出ません</summary>
+        <p>
+          そのバーコードが取り込んだCSVに含まれていない可能性があります。
+          画面右上のキーボードのアイコンから番号を手で入力すると、
+          照合できているかどうかを確かめられます。
+          また「設定」タブで、読み取る対象のバーコードの種類がオンになっているかご確認ください。
+        </p>
+      </details>
+      <details>
+        <summary>棚番号を更新したい</summary>
+        <p>
+          在庫システムから出し直したCSVを「データ」タブから
+          <strong>「新規リスト作成」</strong>で取り込むと、まるごと入れ替わります。
+          新しく採用した数点だけを足したいときは
+          <strong>「既存のリストに追加」</strong>が便利です。
+        </p>
+      </details>
+      <details>
+        <summary>取り込んだデータはどこに保存されますか</summary>
+        <p>
+          端末内のアプリ専用領域にのみ保存されます。外部に送信されることはありません。
+          アプリを削除するとデータも削除されるので、必要であれば事前に書き出しておいてください。
+          詳しくは<a href="/tanadoko/privacy.html">プライバシーポリシー</a>をご覧ください。
+        </p>
+      </details>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">CONTACT</span>
+      <h2>お問い合わせ</h2>
+    </div>
+    <p>
+      ここで解決しない場合は、
+      <a href="https://www.kachikachiyamaworks.com/">株式会社カチカチヤマワークスのWebサイト</a>
+      のお問い合わせフォームからご連絡ください。
+    </p>
+  </section>
+
+  <footer>
+    <p>たなどこ？ / TanaDoko — 在庫の棚番号を、商品名とバーコードから探すアプリ</p>
+    <p>
+      <a href="/tanadoko/csv-guide.html">CSVの作り方</a>ー
+      <a href="/tanadoko/privacy.html">プライバシーポリシー</a>ー
+      <a href="https://www.kachikachiyamaworks.com/">株式会社カチカチヤマワークス</a>
+    </p>
+  </footer>
+
+</div>
+</body>
+</html>
