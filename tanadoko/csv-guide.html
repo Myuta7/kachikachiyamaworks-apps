@@ -201,6 +201,17 @@
         どの列が何なのかは、取り込むときにアプリの画面で指定します（STEP 4）。
       </figcaption>
     </figure>
+
+    <h3>在庫数の列があれば、一緒に取り込めます</h3>
+    <p>
+      <strong>在庫数</strong>と<strong>在庫単位</strong>の列を割り当てると、検索結果の棚番号の左に小さく表示されます。
+      「だいたいどれくらいあるのか」がその場で分かるので、棚に行く前の判断に使えます。
+    </p>
+    <p>
+      在庫が <strong>0</strong> の商品は色を変えて示します。
+      マスタには残っているものの実際は取り扱いが無い商品に気づけるので、棚卸しやマスタ整理のきっかけになります。
+      列が無ければ空欄のままでかまいません。
+    </p>
   </section>
 
   <section class="step">
@@ -234,6 +245,10 @@
         <p class="combo-note">商品名の列は必ず1つ必要です。これが無いと取り込めません。</p>
       </div>
     </div>
+    <p>
+      どの形でも、<span class="tag">在庫数</span><span class="tag">在庫単位</span>
+      の列があれば一緒に取り込めます。
+    </p>
   </section>
 
   <section class="step">
@@ -286,13 +301,23 @@
           <span class="map-to">バーコード</span>
         </div>
         <div class="map-row">
+          <span class="map-from">在庫数</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to">在庫数</span>
+        </div>
+        <div class="map-row">
+          <span class="map-from">単位</span>
+          <span class="map-arrow" aria-hidden="true">→</span>
+          <span class="map-to">在庫単位</span>
+        </div>
+        <div class="map-row">
           <span class="map-from">包装形態</span>
           <span class="map-arrow" aria-hidden="true">→</span>
           <span class="map-to map-to-off">使わない</span>
         </div>
       </div>
       <figcaption>
-        商品名に選べるのは1列だけ。棚番とバーコードは何列でも選べます
+        商品名・在庫数・在庫単位に選べるのは、それぞれ1列だけ。棚番とバーコードは何列でも選べます
         （「棚番1」「棚番2」…と横に並んでいる表もそのまま取り込めます）。
         使わない列は「使わない」のままで無視されます。
       </figcaption>
@@ -400,13 +425,14 @@
     <p>
       STEP 1 の表をそのままCSVにしたものです。見出し行を残して、中身を自分の在庫に書き換えてください。
       Excelでそのまま開けるよう UTF-8（BOM付き）で保存されています。
+      バーコードや在庫数の列が要らなければ、列ごと消してかまいません。
     </p>
     <a class="btn" href="/tanadoko/tanadoko_template.csv" download>テンプレートCSVをダウンロード</a>
-    <pre>商品名,棚番号,バーコード
-サンプル錠10mg,A-1,4901234567890
-サンプル錠10mg,B-2,4901234567906
-サンプル軟膏5g,C-3,
-ガーゼ 5号,D-4,</pre>
+    <pre>商品名,棚番号,バーコード,在庫数,在庫単位
+サンプル錠10mg,A-1,4901234567890,12,箱
+サンプル錠10mg,B-2,4901234567906,,
+サンプル軟膏5g,C-3,,8,本
+ガーゼ 5号,D-4,,0,箱</pre>
   </section>
 
   <section class="step">
